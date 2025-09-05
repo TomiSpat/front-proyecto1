@@ -25,7 +25,11 @@ function ImcForm() {
     }
 
     try {
+<<<<<<< HEAD
       const response = await axios.post("https://back-proyecto1.onrender.com/imc/calcular", {
+=======
+      const response = await axios.post(`${import.meta.env.VITE_API_URL}/imc/calcular`, {
+>>>>>>> bbb908d (Creacion del .env y modificaion de la llamada a la API)
         altura: alturaNum,
         peso: pesoNum,
       });
