@@ -25,7 +25,7 @@ function ImcForm() {
     }
 
     try {
-      const response = await axios.post("http://localhost:3000/imc/calcular", {
+      const response = await axios.post("https://back-proyecto1.vercel.app/", {
         altura: alturaNum,
         peso: pesoNum,
       });
