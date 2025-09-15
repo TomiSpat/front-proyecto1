@@ -13,7 +13,7 @@ const getCategoryColor = (categoria: string) => {
       return "text-green-600 bg-green-50 border-green-200"
     case "sobrepeso":
       return "text-amber-600 bg-amber-50 border-amber-200"
-    case "obesidad":
+    case "obeso":
       return "text-red-600 bg-red-50 border-red-200"
     default:
       return "text-gray-600 bg-gray-50 border-gray-200"
