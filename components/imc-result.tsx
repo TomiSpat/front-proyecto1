@@ -28,7 +28,7 @@ const getCategoryIcon = (categoria: string) => {
       return <Heart className="w-5 h-5" />
     case "sobrepeso":
       return <Activity className="w-5 h-5" />
-    case "obesidad":
+    case "obeso":
       return <AlertCircle className="w-5 h-5" />
     default:
       return <Activity className="w-5 h-5" />
