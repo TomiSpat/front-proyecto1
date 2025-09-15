@@ -1,9 +1,13 @@
-import axios from "axios";
-import type { ImcResult } from "../types/imc";
+import type { ImcRecord, ImcResult } from "../types/imc";
+import api from "./api";
 
 export async function calcularImc(altura: number, peso: number): Promise<ImcResult> {
-  const url = `${import.meta.env.VITE_API_URL}/imc/calcular`;
-  const { data } = await axios.post<ImcResult>(url, { altura, peso });
+  const { data } = await api.post<ImcResult>("/imc/calcular", { altura, peso });
+  return data;
+}
+
+export async function getImcHistory(): Promise<ImcRecord[]> {
+  const { data } = await api.get<ImcRecord[]>("/imc/historial");
   return data;
 }
 
