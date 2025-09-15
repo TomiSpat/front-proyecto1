@@ -9,9 +9,6 @@ import ImcResultView from "./imc-result"
 import ErrorMessage from "./error-message"
 import { Calculator, Zap, Heart } from "lucide-react"
 
-// type Props = {
-//   onCalculated?: (record: ImcRecord) => void
-// }
 
 export default function ImcForm() {
   const [altura, setAltura] = useState("")
@@ -35,46 +32,29 @@ export default function ImcForm() {
     }
 
     try {
-      // Simulate API delay for better UX
-      await new Promise((resolve) => setTimeout(resolve, 800))
-
       const data = await calcularImc(alturaNum, pesoNum)
       setResultado(data)
       setError("")
 
-      // if (onCalculated) {
-      //   const now = new Date()
-      //   const record: ImcRecord = {
-      //     id: String(now.getTime()),
-      //     fecha: now.toISOString(),
-      //     peso: pesoNum,
-      //     altura: alturaNum,
-      //     imc: data.imc,
-      //     categoria: data.categoria,
-      //   }
-      //   onCalculated(record)
-      // }
     } catch (err: any) {
-  let errorMessage = "Error al calcular el IMC. Verifica si el backend está corriendo.";
+      let errorMessage = "Error al calcular el IMC. Verifica si el backend está corriendo.";
 
-  // Si usás axios
-  if (err.response?.data?.message) {
-    // Puede ser string o array
-    errorMessage = Array.isArray(err.response.data.message)
-      ? err.response.data.message.join(", ")
-      : err.response.data.message;
-  }
+      if (err.response?.data?.message) {
+        // Puede ser string o array
+        errorMessage = Array.isArray(err.response.data.message)
+          ? err.response.data.message.join(", ")
+          : err.response.data.message;
+      }
 
-  // Si usás fetch y parseás JSON
-  else if (err.message) {
-    errorMessage = err.message;
-  }
+      else if (err.message) {
+        errorMessage = err.message;
+      }
 
-  setError(errorMessage);
-  setResultado(null);
-} finally {
-  setIsCalculating(false);
-}
+      setError(errorMessage);
+      setResultado(null);
+    } finally {
+      setIsCalculating(false);
+    }
 
 
   }

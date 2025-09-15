@@ -9,7 +9,7 @@ const getCategoryColor = (categoria: string) => {
   switch (categoria.toLowerCase()) {
     case "bajo peso":
       return "text-blue-600 bg-blue-50 border-blue-200"
-    case "peso normal":
+    case "normal":
       return "text-green-600 bg-green-50 border-green-200"
     case "sobrepeso":
       return "text-amber-600 bg-amber-50 border-amber-200"
@@ -24,7 +24,7 @@ const getCategoryIcon = (categoria: string) => {
   switch (categoria.toLowerCase()) {
     case "bajo peso":
       return <TrendingUp className="w-5 h-5" />
-    case "peso normal":
+    case "normal":
       return <Heart className="w-5 h-5" />
     case "sobrepeso":
       return <Activity className="w-5 h-5" />
