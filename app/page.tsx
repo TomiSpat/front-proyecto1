@@ -2,8 +2,15 @@
 import ImcForm from "../components/imc-form"
 import HistorySection from "../components/history-section"
 import { Activity, Sparkles } from "lucide-react"
+import { StatsDashboardView } from "@/components/stats-dashboard-view"
+import { useStatsDashboard } from "@/hooks/use-stats-dashboard"
 
 export default function HomePage() {
+
+    const { records, chartData, metricas } = useStatsDashboard()
+    console.log('Records in HomePage:', records) // Verifica los registros aquí
+    console.log('Chart Data in HomePage:', chartData) // Verifica los datos del gráfico aquí
+    console.log('Metricas in HomePage:', metricas)
 
   return (
     <div className="min-h-screen bg-background">
@@ -28,6 +35,7 @@ export default function HomePage() {
       {/* Main Content */}
       <main className="max-w-4xl mx-auto px-4 py-8 space-y-8">
         <ImcForm/>
+        <StatsDashboardView records={records} chartData={chartData} metricas={metricas} />
         <HistorySection />
       </main>
 
