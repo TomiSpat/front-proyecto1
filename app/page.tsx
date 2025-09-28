@@ -1,50 +1,23 @@
 "use client"
 import ImcForm from "../components/imc-form"
-import HistorySection from "../components/history-section"
-import { Activity, Sparkles } from "lucide-react"
-import { StatsDashboardView } from "@/components/stats-dashboard-view"
-import { useStatsDashboard } from "@/hooks/use-stats-dashboard"
+import Navigation from "../components/navigation"
 
 export default function HomePage() {
-
-    const { records, chartData, metricas } = useStatsDashboard()
-    console.log('Records in HomePage:', records) // Verifica los registros aquí
-    console.log('Chart Data in HomePage:', chartData) // Verifica los datos del gráfico aquí
-    console.log('Metricas in HomePage:', metricas)
-
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="bg-card border-b border-border">
-        <div className="max-w-4xl mx-auto px-4 py-6">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-primary/10 rounded-lg">
-              <Activity className="w-6 h-6 text-primary" />
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
-                Calculadora IMC
-                <Sparkles className="w-5 h-5 text-accent" />
-              </h1>
-              <p className="text-muted-foreground">Tu herramienta para el seguimiento de salud personal</p>
-            </div>
-          </div>
-        </div>
-      </header>
+      <Navigation />
 
       {/* Main Content */}
-      <main className="max-w-4xl mx-auto px-4 py-8 space-y-8">
-        <ImcForm/>
-        <StatsDashboardView records={records} chartData={chartData} metricas={metricas} />
-        <HistorySection />
-      </main>
-
-      {/* Footer */}
-      <footer className="bg-muted/30 border-t border-border mt-16">
-        <div className="max-w-4xl mx-auto px-4 py-6 text-center">
-          <p className="text-sm text-muted-foreground">Calculadora de IMC - Mantén un seguimiento de tu salud</p>
+      <main className="max-w-4xl mx-auto px-4 py-8">
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold text-foreground mb-2">Calculadora de IMC</h1>
+          <p className="text-muted-foreground">
+            Calcula tu Índice de Masa Corporal y mantén un seguimiento de tu salud
+          </p>
         </div>
-      </footer>
+
+        <ImcForm />
+      </main>
     </div>
   )
 }
