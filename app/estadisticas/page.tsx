@@ -1,11 +1,10 @@
 "use client"
 import Navigation from "../../components/navigation"
-import { StatsDashboardView } from "@/components/stats-dashboard-view"
 import { AdvancedStatsSection } from "@/components/advanced-stats-section"
 import { useStatsDashboard } from "@/hooks/use-stats-dashboard"
 
 export default function EstadisticasPage() {
-  const { records, chartData, metricasPorCategoria, metricasPeso, loading, error } = useStatsDashboard()
+  const { records, metricasPorCategoria, metricasPeso, loading, error } = useStatsDashboard()
 
   return (
     <div className="min-h-screen bg-background">
@@ -28,8 +27,7 @@ export default function EstadisticasPage() {
           </div>
         ) : (
           <div className="space-y-8">
-            {/* <StatsDashboardView records={records} chartData={chartData} metricas={null} /> */}
-            <AdvancedStatsSection metricasPorCategoria={metricasPorCategoria} metricasPeso={metricasPeso} />
+            <AdvancedStatsSection records={records} metricasPorCategoria={metricasPorCategoria} metricasPeso={metricasPeso} />
           </div>
         )}
       </main>

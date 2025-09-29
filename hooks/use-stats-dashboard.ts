@@ -5,7 +5,7 @@ import { useState, useEffect } from "react"
 
 export function useStatsDashboard() {
   const [records, setRecords] = useState<IMCRecord[]>([])
-  const [chartData, setChartData] = useState<ChartData[]>([])
+//   const [chartData, setChartData] = useState<ChartData[]>([])
   const [metricasPorCategoria, setMetricasPorCategoria] = useState<MetricasPorCategoria[]>([])
   const [metricasPeso, setMetricasPeso] = useState<MetricasPeso | null>(null)
   const [loading, setLoading] = useState(true)
@@ -17,29 +17,30 @@ export function useStatsDashboard() {
         setLoading(true)
         setError(null)
 
-        const [historyData, categoriaMetrics, pesoMetrics] = await Promise.allSettled([
-          getImcHistory(),
+        const [ historyData, categoriaMetrics, pesoMetrics] = await Promise.allSettled([
+          getImcHistory({take:100, order: "ASC"}),
           getMetricasPorCategoria(),
           getMetricasPeso(),
         ])
 
         // Handle history data
-        if (historyData.status === "fulfilled" && historyData.value?.length > 0) {
-          setRecords(historyData.value)
-
-          const chartDataFormatted = historyData.value
-            .sort((a, b) => new Date(a.fecha).getTime() - new Date(b.fecha).getTime())
-            .map((record) => ({
-              fecha: record.fecha,
-              peso: record.peso,
-              imc: Number.parseFloat(record.imc.toFixed(1)),
-              fechaCorta: new Date(record.fecha).toLocaleDateString("es-ES", {
-                month: "short",
-                day: "numeric",
-              }),
-            }))
-          setChartData(chartDataFormatted)
+        if (historyData.status === "fulfilled" && historyData.value?.data.length > 0) {
+          setRecords(historyData.value.data)
         }
+
+        //   const chartDataFormatted = historyData.value
+        //     .sort((a, b) => new Date(a.fecha).getTime() - new Date(b.fecha).getTime())
+        //     .map((record) => ({
+        //       fecha: record.fecha,
+        //       peso: record.peso,
+        //       imc: Number.parseFloat(record.imc.toFixed(1)),
+        //       fechaCorta: new Date(record.fecha).toLocaleDateString("es-ES", {
+        //         month: "short",
+        //         day: "numeric",
+        //       }),
+        //     }))
+        //   setChartData(chartDataFormatted)
+        // }
 
         // Handle categoria metrics
         if (categoriaMetrics.status === "fulfilled") {
@@ -67,7 +68,7 @@ export function useStatsDashboard() {
 
   return {
     records,
-    chartData,
+    // chartData,
     metricas: null, // Removed frontend calculated metrics
     metricasPorCategoria,
     metricasPeso,
