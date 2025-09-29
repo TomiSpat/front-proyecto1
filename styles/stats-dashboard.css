@@ -1,0 +1,117 @@
+/* Dashboard de Estadísticas - Estilos */
+
+.stats-dashboard {
+  @apply space-y-6;
+}
+
+/* Métricas Grid */
+.metrics-grid {
+  @apply grid gap-4 md:grid-rows-2 lg:grid-rows-4;
+}
+
+.metric-header {
+  @apply flex flex-row items-center justify-between space-y-0 pb-2;
+}
+
+.metric-title {
+  @apply text-sm font-medium;
+}
+
+.metric-icon {
+  @apply h-4 w-4 text-muted-foreground;
+}
+
+.metric-value {
+  @apply text-2xl font-bold;
+}
+
+.metric-description {
+  @apply text-xs text-muted-foreground;
+}
+
+/* Iconos de tendencia */
+.trend-icon {
+  @apply h-4 w-4;
+}
+
+.trend-up {
+  @apply text-red-500;
+}
+
+.trend-down {
+  @apply text-green-500;
+}
+
+.trend-stable {
+  @apply text-blue-500;
+}
+
+/* Gráficos Grid */
+.charts-grid {
+  @apply grid gap-6 md:grid-cols-2;
+}
+
+.chart-container {
+  @apply h-[300px];
+}
+
+/* Tabla de registros */
+.table-container {
+  @apply overflow-x-auto;
+}
+
+.records-table {
+  @apply w-full text-sm;
+}
+
+.table-header {
+  @apply border-b;
+}
+
+.table-row {
+  @apply border-b;
+}
+
+.table-cell {
+  @apply text-left p-2;
+}
+
+.table-cell-bold {
+  @apply font-medium;
+}
+
+/* Badges de categorías */
+.category-badge {
+  @apply px-2 py-1 rounded-full text-xs;
+}
+
+.category-normal {
+  @apply bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300;
+}
+
+.category-overweight {
+  @apply bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300;
+}
+
+.category-obesity {
+  @apply bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300;
+}
+
+.category-underweight {
+  @apply bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .metrics-grid {
+    @apply grid-cols-1 sm:grid-cols-2;
+  }
+
+  .charts-grid {
+    @apply grid-cols-1;
+  }
+
+  .chart-container {
+    @apply h-[250px];
+  }
+}

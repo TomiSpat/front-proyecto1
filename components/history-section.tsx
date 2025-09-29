@@ -13,7 +13,15 @@ export default function HistorySection() {
   const [records, setRecords] = useState<ImcRecord[]>([])
   const [loading, setLoading] = useState(false)
   const [totalRecords, setTotalRecords] = useState(0)
-
+  const [filters, setFilters] = useState<HistorialFilters>({
+    from: undefined,
+    to: undefined,
+    categoria: "",
+    order: "DESC",
+    take: 10,
+    skip: 0,
+  })
+  
 
   useEffect(() => {
     const fetchHistory = async () => {
@@ -27,23 +35,17 @@ export default function HistorySection() {
   }, [])
 
 
-  const [filters, setFilters] = useState<HistorialFilters>({
-    from: undefined,
-    to: undefined,
-    categoria: "",
-    order: "DESC",
-    take: 10,
-    skip: 0,
-  })
 
   const fetchHistorial = async (currentFilters: HistorialFilters) => {
     setLoading(true)
     try {
       const data = await getImcHistory(currentFilters)
 
+      // Si es un arryay, asignarlo directamente
       if (Array.isArray(data)) {
         setRecords(data)
         setTotalRecords(data.length)
+        // Si es un objeto con records y total, asignarlos
       } else {
         setRecords((data as any).records || data)
         setTotalRecords((data as any).total || (data as any).length || 0)
@@ -79,6 +81,7 @@ export default function HistorySection() {
           <h2 className="text-xl font-bold text-foreground">Historial de IMC</h2>
           <p className="text-sm text-muted-foreground">Seguimiento de tus mediciones anteriores</p>
         </div>
+        {/* Mostrar el total de registros en caso de que existan */}
         {totalRecords > 0 && (
           <div className="ml-auto flex items-center gap-1 text-sm text-muted-foreground">
             <TrendingUp className="w-4 h-4" />
