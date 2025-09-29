@@ -6,7 +6,6 @@ import { useState, useEffect } from "react"
 
 export function useStatsDashboard() {
   const [records, setRecords] = useState<ImcRecord[]>([])
-//   const [chartData, setChartData] = useState<ChartData[]>([])
   const [metricasPorCategoria, setMetricasPorCategoria] = useState<MetricasPorCategoria[]>([])
   const [metricasPeso, setMetricasPeso] = useState<MetricasPeso | null>(null)
   const [loading, setLoading] = useState(true)
@@ -24,33 +23,16 @@ export function useStatsDashboard() {
           getMetricasPeso(),
         ])
 
-        // Handle history data
         if (historyData.status === "fulfilled" && historyData.value?.data.length > 0) {
           setRecords(historyData.value.data)
         }
 
-        //   const chartDataFormatted = historyData.value
-        //     .sort((a, b) => new Date(a.fecha).getTime() - new Date(b.fecha).getTime())
-        //     .map((record) => ({
-        //       fecha: record.fecha,
-        //       peso: record.peso,
-        //       imc: Number.parseFloat(record.imc.toFixed(1)),
-        //       fechaCorta: new Date(record.fecha).toLocaleDateString("es-ES", {
-        //         month: "short",
-        //         day: "numeric",
-        //       }),
-        //     }))
-        //   setChartData(chartDataFormatted)
-        // }
-
-        // Handle categoria metrics
         if (categoriaMetrics.status === "fulfilled") {
           setMetricasPorCategoria(categoriaMetrics.value)
         } else {
           console.error("Error fetching categoria metrics:", categoriaMetrics.reason)
         }
 
-        // Handle peso metrics
         if (pesoMetrics.status === "fulfilled") {
           setMetricasPeso(pesoMetrics.value)
         } else {
@@ -69,8 +51,7 @@ export function useStatsDashboard() {
 
   return {
     records,
-    // chartData,
-    metricas: null, // Removed frontend calculated metrics
+    metricas: null,
     metricasPorCategoria,
     metricasPeso,
     loading,
