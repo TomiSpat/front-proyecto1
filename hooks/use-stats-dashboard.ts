@@ -1,11 +1,11 @@
 "use client"
 import { getImcHistory, getMetricasPorCategoria, getMetricasPeso } from "@/services/imcService"
-import type { ChartData, IMCRecord, MetricasPorCategoria, MetricasPeso } from "@/types/stats"
+import { ImcRecord } from "@/types/imc"
+import type { MetricasPorCategoria, MetricasPeso } from "@/types/stats"
 import { useState, useEffect } from "react"
 
 export function useStatsDashboard() {
-  const [records, setRecords] = useState<IMCRecord[]>([])
-  const [chartData, setChartData] = useState<ChartData[]>([])
+  const [records, setRecords] = useState<ImcRecord[]>([])
   const [metricasPorCategoria, setMetricasPorCategoria] = useState<MetricasPorCategoria[]>([])
   const [metricasPeso, setMetricasPeso] = useState<MetricasPeso | null>(null)
   const [loading, setLoading] = useState(true)
@@ -17,38 +17,22 @@ export function useStatsDashboard() {
         setLoading(true)
         setError(null)
 
-        const [historyData, categoriaMetrics, pesoMetrics] = await Promise.allSettled([
-          getImcHistory(),
+        const [ historyData, categoriaMetrics, pesoMetrics] = await Promise.allSettled([
+          getImcHistory({take:100, order: "ASC"}),
           getMetricasPorCategoria(),
           getMetricasPeso(),
         ])
 
-        // Handle history data
-        if (historyData.status === "fulfilled" && historyData.value?.length > 0) {
-          setRecords(historyData.value)
-
-          const chartDataFormatted = historyData.value
-            .sort((a, b) => new Date(a.fecha).getTime() - new Date(b.fecha).getTime())
-            .map((record) => ({
-              fecha: record.fecha,
-              peso: record.peso,
-              imc: Number.parseFloat(record.imc.toFixed(1)),
-              fechaCorta: new Date(record.fecha).toLocaleDateString("es-ES", {
-                month: "short",
-                day: "numeric",
-              }),
-            }))
-          setChartData(chartDataFormatted)
+        if (historyData.status === "fulfilled" && historyData.value?.data.length > 0) {
+          setRecords(historyData.value.data)
         }
 
-        // Handle categoria metrics
         if (categoriaMetrics.status === "fulfilled") {
           setMetricasPorCategoria(categoriaMetrics.value)
         } else {
           console.error("Error fetching categoria metrics:", categoriaMetrics.reason)
         }
 
-        // Handle peso metrics
         if (pesoMetrics.status === "fulfilled") {
           setMetricasPeso(pesoMetrics.value)
         } else {
@@ -67,8 +51,7 @@ export function useStatsDashboard() {
 
   return {
     records,
-    chartData,
-    metricas: null, // Removed frontend calculated metrics
+    metricas: null,
     metricasPorCategoria,
     metricasPeso,
     loading,

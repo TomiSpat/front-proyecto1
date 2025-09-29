@@ -1,12 +1,40 @@
 "use client"
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
-import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid } from "recharts"
 import { Users, Weight, TrendingUp, BarChart3 } from "lucide-react"
-import type { MetricasPorCategoria, MetricasPeso } from "@/types/stats"
+import type { MetricasPorCategoria, MetricasPeso} from "@/types/stats"
+
+// Chart.js imports
+import {
+  Chart as ChartJS,
+  ArcElement,
+  Tooltip,
+  Legend,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  PointElement,
+  LineElement,
+} from "chart.js"
+import { Pie, Bar, Line } from "react-chartjs-2"
+import { ImcRecord } from "@/types/imc"
+
+// Registrar componentes de Chart.js
+ChartJS.register(
+  ArcElement,
+  Tooltip,
+  Legend,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  PointElement,
+  LineElement
+)
 
 interface AdvancedStatsSectionProps {
+  records: ImcRecord[]
   metricasPorCategoria: MetricasPorCategoria[]
   metricasPeso: MetricasPeso | null
 }
@@ -18,8 +46,8 @@ const COLORS = {
   Obeso: "#ef4444",
 }
 
-export function AdvancedStatsSection({ metricasPorCategoria, metricasPeso }: AdvancedStatsSectionProps) {
-  if (metricasPorCategoria.length === 0 && !metricasPeso) {
+export function AdvancedStatsSection({ records, metricasPorCategoria, metricasPeso }: AdvancedStatsSectionProps) {
+  if (metricasPorCategoria.length === 0 && !metricasPeso && records.length === 0) {
     return (
       <Card>
         <CardHeader>
@@ -31,6 +59,80 @@ export function AdvancedStatsSection({ metricasPorCategoria, metricasPeso }: Adv
         </CardHeader>
       </Card>
     )
+  }
+
+  // Configuración gráfico de pastel
+  const pieData = {
+    labels: metricasPorCategoria.map((m) => m.categoria),
+    datasets: [
+      {
+        data: metricasPorCategoria.map((m) => m.total),
+        backgroundColor: metricasPorCategoria.map(
+          (m) => COLORS[m.categoria as keyof typeof COLORS] || "#8884d8"
+        ),
+        borderWidth: 1,
+      },
+    ],
+  }
+
+  // Configuración gráfico de barras
+  const barData = {
+    labels: metricasPorCategoria.map((m) => m.categoria),
+    datasets: [
+      {
+        label: "IMC Promedio",
+        data: metricasPorCategoria.map((m) => m.promedioImc),
+        backgroundColor: "rgba(16, 185, 129, 0.8)",
+        borderRadius: 6,
+      },
+    ],
+  }
+
+  const barOptions = {
+    responsive: true,
+    plugins: {
+      legend: { display: false },
+    },
+    scales: {
+      x: {
+        ticks: { font: { size: 12 }, maxRotation: 45, minRotation: 45 },
+      },
+      y: {
+        ticks: { font: { size: 12 } },
+      },
+    },
+  }
+
+  // Configuración gráfico de línea (IMC en el tiempo)
+  const lineData = {
+    labels: records.map((r) => new Date(r.fecha).toLocaleDateString("es-AR")),
+    datasets: [
+      {
+        label: "IMC",
+        data: records.map((r) => r.imc),
+        borderColor: "#3b82f6",
+        backgroundColor: "rgba(59, 130, 246, 0.3)",
+        fill: true,
+        tension: 0.3, // suaviza la curva
+        pointRadius: 4,
+        pointBackgroundColor: "#3b82f6",
+      },
+    ],
+  }
+
+  const lineOptions = {
+    responsive: true,
+    plugins: {
+      legend: { display: false },
+    },
+    scales: {
+      x: {
+        title: { display: true, text: "Fecha" },
+      },
+      y: {
+        title: { display: true, text: "IMC" },
+      },
+    },
   }
 
   return (
@@ -78,91 +180,50 @@ export function AdvancedStatsSection({ metricasPorCategoria, metricasPeso }: Adv
         </div>
       )}
 
-      {/* Gráficos de Métricas por Categoría */}
-      {metricasPorCategoria.length > 0 && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Gráfico de Pastel - Distribución por Categoría */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Distribución por Categoría IMC</CardTitle>
-              <CardDescription>Porcentaje de registros por cada categoría</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ChartContainer
-                config={{
-                  total: {
-                    label: "Total",
-                    color: "hsl(var(--chart-1))",
-                  },
-                }}
-                className="h-[300px]"
-              >
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={metricasPorCategoria}
-                      cx="50%"
-                      cy="50%"
-                      labelLine={false}
-                      label={({ categoria, percent }) => `${categoria} ${(percent * 100).toFixed(0)}%`}
-                      outerRadius={80}
-                      fill="#8884d8"
-                      dataKey="total"
-                    >
-                      {metricasPorCategoria.map((entry, index) => (
-                        <Cell
-                          key={`cell-${index}`}
-                          fill={COLORS[entry.categoria as keyof typeof COLORS] || "#8884d8"}
-                        />
-                      ))}
-                    </Pie>
-                    <ChartTooltip content={<ChartTooltipContent />} />
-                  </PieChart>
-                </ResponsiveContainer>
-              </ChartContainer>
-            </CardContent>
-          </Card>
-
-          {/* Gráfico de Barras - IMC Promedio por Categoría */}
-          <Card>
-            <CardHeader>
-              <CardTitle>IMC Promedio por Categoría</CardTitle>
-              <CardDescription>Valor promedio de IMC en cada categoría</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ChartContainer
-                config={{
-                  promedioImc: {
-                    label: "IMC Promedio",
-                    color: "hsl(var(--chart-2))",
-                  },
-                }}
-                className="h-[300px]"
-              >
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={metricasPorCategoria}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis
-                      dataKey="categoria"
-                      fontSize={12}
-                      tickLine={false}
-                      axisLine={false}
-                      angle={-45}
-                      textAnchor="end"
-                      height={80}
-                    />
-                    <YAxis fontSize={12} tickLine={false} axisLine={false} />
-                    <ChartTooltip content={<ChartTooltipContent />} />
-                    <Bar dataKey="promedioImc" fill="var(--color-promedioImc)" radius={[4, 4, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </ChartContainer>
-            </CardContent>
-          </Card>
-        </div>
+      {/* Line chart - IMC en el tiempo */}
+      {records.length > 0 && (
+        <Card className="lg:col-span-2">
+          <CardHeader>
+            <CardTitle>Evolución del IMC</CardTitle>
+            <CardDescription>Histórico de IMC en función de la fecha</CardDescription>
+          </CardHeader>
+          <CardContent className="h-[350px] flex items-center justify-center">
+            <Line data={lineData} options={lineOptions} />
+          </CardContent>
+        </Card>
       )}
 
-      {/* Tabla de Detalles por Categoría */}
+      {/* Gráficos */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {metricasPorCategoria.length > 0 && (
+          <>
+            {/* Pie chart */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Distribución por Categoría IMC</CardTitle>
+                <CardDescription>Porcentaje de registros por cada categoría</CardDescription>
+              </CardHeader>
+              <CardContent className="h-[300px] flex items-center justify-center">
+                <Pie data={pieData} />
+              </CardContent>
+            </Card>
+
+            {/* Bar chart */}
+            <Card>
+              <CardHeader>
+                <CardTitle>IMC Promedio por Categoría</CardTitle>
+                <CardDescription>Valor promedio de IMC en cada categoría</CardDescription>
+              </CardHeader>
+              <CardContent className="h-[300px] flex items-center justify-center">
+                <Bar data={barData} options={barOptions} />
+              </CardContent>
+            </Card>
+          </>
+        )}
+
+      </div>
+
+      {/* Tabla */}
       {metricasPorCategoria.length > 0 && (
         <Card>
           <CardHeader>

@@ -1,13 +1,11 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useMemo } from "react"
 import type { HistorialFilters, ImcRecord } from "../types/imc"
 import HistoryFilter from "./history-filter"
 import HistoryTable from "./history-table"
 import { History, TrendingUp, Loader2 } from "lucide-react"
-import { getImcHistory} from "@/services/imcService"
-
-type Props = {}
+import { getImcHistory } from "@/services/imcService"
 
 export default function HistorySection() {
   const [records, setRecords] = useState<ImcRecord[]>([])
@@ -21,34 +19,26 @@ export default function HistorySection() {
     take: 10,
     skip: 0,
   })
-  
 
-  useEffect(() => {
-    const fetchHistory = async () => {
-      const res = await getImcHistory()
-      if(res.length === 0) {
-        throw new Error('Error fetching IMC history')
-      }
-      setRecords(res)
-    }
-    fetchHistory()
-  }, [])
-
-
+  const currentPage = useMemo(
+    () => Math.floor((filters.skip || 0) / (filters.take || 10)) + 1,
+    [filters]
+  )
+  const totalPages = useMemo(
+    () => Math.ceil(totalRecords / (filters.take || 10)),
+    [totalRecords, filters.take]
+  )
 
   const fetchHistorial = async (currentFilters: HistorialFilters) => {
     setLoading(true)
     try {
-      const data = await getImcHistory(currentFilters)
-
-      // Si es un arryay, asignarlo directamente
-      if (Array.isArray(data)) {
-        setRecords(data)
-        setTotalRecords(data.length)
-        // Si es un objeto con records y total, asignarlos
+      const res = await getImcHistory(currentFilters)
+      if (Array.isArray(res.data)) {
+        setRecords(res.data)
+        setTotalRecords(res.total)
       } else {
-        setRecords((data as any).records || data)
-        setTotalRecords((data as any).total || (data as any).length || 0)
+        setRecords((res.data as any).records || res.data)
+        setTotalRecords((res.data as any).total || (res.data as any).length || 0)
       }
     } catch (error) {
       console.error("Error fetching historial:", error)
@@ -67,9 +57,24 @@ export default function HistorySection() {
     setFilters({ ...newFilters, skip: 0 })
   }
 
-  const handleLoadMore = () => {
-    setFilters((prev) => ({ ...prev, skip: (prev.skip || 0) + (prev.take || 10) }))
+  const handlePageChange = (page: number) => {
+    setFilters((prev) => ({
+      ...prev,
+      skip: (page - 1) * (prev.take || 10),
+    }))
   }
+
+  // Calcular rango de páginas visibles
+  const maxVisible = 5
+  const half = Math.floor(maxVisible / 2)
+  let start = Math.max(1, currentPage - half)
+  let end = Math.min(totalPages, start + maxVisible - 1)
+
+  if (end - start < maxVisible - 1) {
+    start = Math.max(1, end - maxVisible + 1)
+  }
+
+  const visiblePages = Array.from({ length: end - start + 1 }, (_, i) => start + i)
 
   return (
     <section className="bg-card border border-border rounded-xl p-6 health-shadow">
@@ -81,7 +86,6 @@ export default function HistorySection() {
           <h2 className="text-xl font-bold text-foreground">Historial de IMC</h2>
           <p className="text-sm text-muted-foreground">Seguimiento de tus mediciones anteriores</p>
         </div>
-        {/* Mostrar el total de registros en caso de que existan */}
         {totalRecords > 0 && (
           <div className="ml-auto flex items-center gap-1 text-sm text-muted-foreground">
             <TrendingUp className="w-4 h-4" />
@@ -109,15 +113,66 @@ export default function HistorySection() {
 
         {!loading && <HistoryTable records={records} />}
 
-        {!loading && records.length > 0 && records.length < totalRecords && (
-          <div className="flex justify-center pt-4">
+        {!loading && records.length > 0 && totalPages > 1 && (
+          <div className="flex justify-center gap-2 pt-4">
+            {/* Botón Anterior */}
             <button
-              onClick={handleLoadMore}
-              className="px-6 py-2 bg-primary text-primary-foreground rounded-lg
-                       hover:bg-primary/90 transition-colors focus:outline-none 
-                       focus:ring-2 focus:ring-primary/20"
+              disabled={currentPage === 1}
+              onClick={() => handlePageChange(currentPage - 1)}
+              className="px-3 py-1 rounded-lg border bg-background text-foreground 
+                        disabled:opacity-50 disabled:cursor-not-allowed hover:bg-muted"
             >
-              Cargar más registros ({totalRecords - records.length} restantes)
+              «
+            </button>
+
+            {/* Primera página si no está en rango */}
+            {start > 1 && (
+              <>
+                <button
+                  onClick={() => handlePageChange(1)}
+                  className="px-3 py-1 rounded-lg border bg-background hover:bg-muted"
+                >
+                  1
+                </button>
+                {start > 2 && <span className="px-2">...</span>}
+              </>
+            )}
+
+            {/* Páginas visibles */}
+            {visiblePages.map((page) => (
+              <button
+                key={page}
+                onClick={() => handlePageChange(page)}
+                className={`px-3 py-1 rounded-lg border transition-colors 
+                ${page === currentPage
+                    ? "bg-primary text-primary-foreground border-primary"
+                    : "bg-background text-foreground hover:bg-muted"}`}
+              >
+                {page}
+              </button>
+            ))}
+
+            {/* Última página si no está en rango */}
+            {end < totalPages && (
+              <>
+                {end < totalPages - 1 && <span className="px-2">...</span>}
+                <button
+                  onClick={() => handlePageChange(totalPages)}
+                  className="px-3 py-1 rounded-lg border bg-background hover:bg-muted"
+                >
+                  {totalPages}
+                </button>
+              </>
+            )}
+
+            {/* Botón Siguiente */}
+            <button
+              disabled={currentPage === totalPages}
+              onClick={() => handlePageChange(currentPage + 1)}
+              className="px-3 py-1 rounded-lg border bg-background text-foreground 
+                        disabled:opacity-50 disabled:cursor-not-allowed hover:bg-muted"
+            >
+              »
             </button>
           </div>
         )}
