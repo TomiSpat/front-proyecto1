@@ -1,10 +1,11 @@
 "use client"
 import { getImcHistory, getMetricasPorCategoria, getMetricasPeso } from "@/services/imcService"
-import type { ChartData, IMCRecord, MetricasPorCategoria, MetricasPeso } from "@/types/stats"
+import { ImcRecord } from "@/types/imc"
+import type { MetricasPorCategoria, MetricasPeso } from "@/types/stats"
 import { useState, useEffect } from "react"
 
 export function useStatsDashboard() {
-  const [records, setRecords] = useState<IMCRecord[]>([])
+  const [records, setRecords] = useState<ImcRecord[]>([])
 //   const [chartData, setChartData] = useState<ChartData[]>([])
   const [metricasPorCategoria, setMetricasPorCategoria] = useState<MetricasPorCategoria[]>([])
   const [metricasPeso, setMetricasPeso] = useState<MetricasPeso | null>(null)
