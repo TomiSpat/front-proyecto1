@@ -20,3 +20,8 @@ export interface HistorialFilters {
   from?: Date
   to?: Date
 }
+
+export interface ImcHistoryResponse {
+  data: ImcRecord[]
+  total: number
+}
