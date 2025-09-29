@@ -1,12 +1,11 @@
 import type { HistorialFilters, ImcRecord, ImcResult } from "../types/imc"
+import type { MetricasPorCategoria, MetricasPeso } from "../types/stats"
 import api from "./api"
 
 export async function calcularImc(altura: number, peso: number): Promise<ImcResult> {
   const { data } = await api.post<ImcResult>("/imc/calcular", { altura, peso })
   return data
 }
-
-
 
 export async function getImcHistory(filters: HistorialFilters = {}): Promise<ImcRecord[]> {
   const params = new URLSearchParams()
@@ -19,5 +18,15 @@ export async function getImcHistory(filters: HistorialFilters = {}): Promise<Imc
   if (filters.to) params.append("to", filters.to.toISOString().split("T")[0] + "T23:59:59")
 
   const { data } = await api.get<ImcRecord[]>(`/imc/historial?${params.toString()}`)
+  return data
+}
+
+export async function getMetricasPorCategoria(): Promise<MetricasPorCategoria[]> {
+  const { data } = await api.get<MetricasPorCategoria[]>("/imc/metricas")
+  return data
+}
+
+export async function getMetricasPeso(): Promise<MetricasPeso> {
+  const { data } = await api.get<MetricasPeso>("/imc/metricas/peso")
   return data
 }

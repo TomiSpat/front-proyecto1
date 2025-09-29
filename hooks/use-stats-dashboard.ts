@@ -1,110 +1,77 @@
 "use client"
-
-import api from "@/services/api"
-import { getImcHistory } from "@/services/imcService"
-import { ChartData, IMCRecord, MetricasAgregadas } from "@/types/stats"
+import { getImcHistory, getMetricasPorCategoria, getMetricasPeso } from "@/services/imcService"
+import type { ChartData, IMCRecord, MetricasPorCategoria, MetricasPeso } from "@/types/stats"
 import { useState, useEffect } from "react"
 
 export function useStatsDashboard() {
-    const [records, setRecords] = useState<IMCRecord[]>([])
-    const [chartData, setChartData] = useState<ChartData[]>([])
-    const [metricas, setMetricas] = useState<MetricasAgregadas | null>(null)
+  const [records, setRecords] = useState<IMCRecord[]>([])
+  const [chartData, setChartData] = useState<ChartData[]>([])
+  const [metricasPorCategoria, setMetricasPorCategoria] = useState<MetricasPorCategoria[]>([])
+  const [metricasPeso, setMetricasPeso] = useState<MetricasPeso | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
-    useEffect(() => {
-        const fetchImcHistory = async () => {
-            const savedRecords = await getImcHistory()
-            if (savedRecords.length === 0) {
-                throw new Error('Error fetching IMC history')
-            }
-            if (savedRecords) {
-                const parsedRecords: IMCRecord[] = savedRecords
-                setRecords(parsedRecords)
-            }
-        }
-        fetchImcHistory()
-    }, [])
+  useEffect(() => {
+    const fetchAllData = async () => {
+      try {
+        setLoading(true)
+        setError(null)
 
-    useEffect(() => {
-        // const fetchImcHistory = async () => {
-        //     const savedRecords = await getImcHistory()
-        //     if (savedRecords.length === 0) {
-        //         throw new Error('Error fetching IMC history')
-        //     }
-        //     if (savedRecords) {
-        //         const parsedRecords: IMCRecord[] = savedRecords
-        //         setRecords(parsedRecords)
-        //     }
-        // }
-        // fetchImcHistory()
-        if (records) {
-            //   const parsedRecords: IMCRecord[] = savedRecords
-            //   setRecords(parsedRecords)
+        const [historyData, categoriaMetrics, pesoMetrics] = await Promise.allSettled([
+          getImcHistory(),
+          getMetricasPorCategoria(),
+          getMetricasPeso(),
+        ])
 
-            // Preparar datos para gráficos
-            const chartDataFormatted = records
-                .sort((a, b) => new Date(a.fecha).getTime() - new Date(b.fecha).getTime())
-                .map((record) => ({
-                    fecha: record.fecha,
-                    peso: record.peso,
-                    imc: Number.parseFloat(record.imc.toFixed(1)),
-                    fechaCorta: new Date(record.fecha).toLocaleDateString("es-ES", {
-                        month: "short",
-                        day: "numeric",
-                    }),
-                }))
-            console.log('Chart Data Formatted:', chartDataFormatted) // Verifica los datos del gráfico aquí
+        // Handle history data
+        if (historyData.status === "fulfilled" && historyData.value?.length > 0) {
+          setRecords(historyData.value)
 
-            setChartData(chartDataFormatted)
-
-            // Calcular métricas agregadas
-            if (records.length > 0) {
-                const metricsCalculated = calcularMetricas(records)
-                setMetricas(metricsCalculated)
-            }
-        }
-    }, [records])
-
-    const calcularMetricas = (records: IMCRecord[]): MetricasAgregadas => {
-        const totalRegistros = records.length
-        const imcPromedio = records.reduce((sum, record) => sum + record.imc, 0) / totalRegistros
-        const pesoPromedio = records.reduce((sum, record) => sum + record.peso, 0) / totalRegistros
-
-        // Ordenar por fecha para calcular tendencia
-        const recordsOrdenados = [...records].sort((a, b) => new Date(a.fecha).getTime() - new Date(b.fecha).getTime())
-
-        const ultimoIMC = recordsOrdenados[recordsOrdenados.length - 1].imc
-        const categoriaActual = recordsOrdenados[recordsOrdenados.length - 1].categoria
-
-        let tendenciaIMC: "subiendo" | "bajando" | "estable" = "estable"
-        let cambioIMC = 0
-
-        if (recordsOrdenados.length > 1) {
-            const primerIMC = recordsOrdenados[0].imc
-            cambioIMC = ultimoIMC - primerIMC
-
-            if (Math.abs(cambioIMC) < 0.5) {
-                tendenciaIMC = "estable"
-            } else if (cambioIMC > 0) {
-                tendenciaIMC = "subiendo"
-            } else {
-                tendenciaIMC = "bajando"
-            }
+          const chartDataFormatted = historyData.value
+            .sort((a, b) => new Date(a.fecha).getTime() - new Date(b.fecha).getTime())
+            .map((record) => ({
+              fecha: record.fecha,
+              peso: record.peso,
+              imc: Number.parseFloat(record.imc.toFixed(1)),
+              fechaCorta: new Date(record.fecha).toLocaleDateString("es-ES", {
+                month: "short",
+                day: "numeric",
+              }),
+            }))
+          setChartData(chartDataFormatted)
         }
 
-        return {
-            totalRegistros,
-            imcPromedio,
-            pesoPromedio,
-            tendenciaIMC,
-            cambioIMC,
-            ultimoIMC,
-            categoriaActual,
+        // Handle categoria metrics
+        if (categoriaMetrics.status === "fulfilled") {
+          setMetricasPorCategoria(categoriaMetrics.value)
+        } else {
+          console.error("Error fetching categoria metrics:", categoriaMetrics.reason)
         }
+
+        // Handle peso metrics
+        if (pesoMetrics.status === "fulfilled") {
+          setMetricasPeso(pesoMetrics.value)
+        } else {
+          console.error("Error fetching peso metrics:", pesoMetrics.reason)
+        }
+      } catch (error) {
+        console.error("Error fetching data:", error)
+        setError(error instanceof Error ? error.message : "Error desconocido")
+      } finally {
+        setLoading(false)
+      }
     }
 
-    return {
-        records,
-        chartData,
-        metricas,
-    }
+    fetchAllData()
+  }, [])
+
+  return {
+    records,
+    chartData,
+    metricas: null, // Removed frontend calculated metrics
+    metricasPorCategoria,
+    metricasPeso,
+    loading,
+    error,
+  }
 }
